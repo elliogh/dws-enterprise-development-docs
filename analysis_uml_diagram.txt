@@ -20,6 +20,6 @@ class CartItem {
   - quantity: Integer
 }
 
-Cart --> CartItem : contains
-CartItem --> Book : association
+Cart "1" *-- "0..*" CartItem : contains
+CartItem "1" --> "1" Book : references
 @enduml
