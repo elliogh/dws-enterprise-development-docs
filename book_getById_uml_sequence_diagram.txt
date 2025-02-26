@@ -1,0 +1,29 @@
+@startuml
+actor "UI" as UI
+participant "BookController" as BC
+participant "BookService" as BS
+participant "BookRepository" as BR
+
+UI -> BC: getById(id)
+activate BC
+
+BC -> BS: getById(id)
+activate BS
+
+BS -> BR: findById(id)
+activate BR
+BR --> BS: Optional<Book>
+deactivate BR
+
+alt "Книга не найдена"
+    BS --> BC: Ошибка 404
+    deactivate BS
+    BC --> UI: Ошибка "Книга не найдена"
+else "Книга найдена"
+    BS --> BC: Book
+    deactivate BS
+    BC --> UI: Book
+end
+
+deactivate BC
+@enduml

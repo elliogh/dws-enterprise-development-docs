@@ -1,0 +1,49 @@
+@startuml
+actor "UI" as UI
+participant "CartController" as CC
+participant "CartService" as CS
+participant "BookService" as BS
+participant "CartRepository" as CR
+
+UI -> CC: addBookToCart(dto, cartId)
+activate CC
+
+CC -> CS: addBookToCart(dto, cartId)
+activate CS
+
+CS -> CR: findById(cartId)
+activate CR
+CR --> CS: Optional<Cart>
+deactivate CR
+
+alt "Корзина не найдена"
+    CS --> CC: Ошибка 404
+    deactivate CS
+    CC --> UI: Ошибка "Корзина не найдена"
+else "Корзина существует"
+    CS -> BS: getById(dto.bookId)
+    activate BS
+    BS --> CS: Book
+    deactivate BS
+
+    alt "Книга недоступна (isAvailable = false)"
+        CS --> CC: Ошибка 400
+        deactivate CS
+        CC --> UI: Ошибка "Книга недоступна"
+    else "Книга доступна"
+        CS -> CS: Создать CartItem
+        note right CS: Проверка на дублирование товара\nв корзине
+        CS -> CS: Добавить в корзину
+        CS -> CR: save(cart)
+        activate CR
+        CR --> CS: Cart
+        deactivate CR
+
+        CS --> CC: Cart
+        deactivate CS
+        CC --> UI: Cart
+    end
+end
+
+deactivate CC
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+actor "UI" as UI
+participant "CartController" as CC
+participant "CartService" as CS
+participant "CartRepository" as CR
+
+UI -> CC: viewCart(cartId)
+activate CC
+
+CC -> CS: getCartById(cartId)
+activate CS
+
+CS -> CR: findById(cartId)
+activate CR
+CR --> CS: Optional<Cart>
+deactivate CR
+
+alt "Корзина не найдена"
+    CS --> CC: Ошибка 404
+    deactivate CS
+    CC --> UI: Ошибка "Корзина не найдена"
+else "Корзина существует"
+    CS --> CC: Cart
+    deactivate CS
+    CC --> UI: Cart
+end
+
+deactivate CC
+@enduml

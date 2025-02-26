@@ -1,0 +1,25 @@
+@startuml
+actor "UI" as UI
+participant "BookController" as BC
+participant "BookService" as BS
+participant "BookRepository" as BR
+
+UI -> BC: getAll()
+activate BC
+
+BC -> BS: getAll()
+activate BS
+
+BS -> BR: findAll()
+activate BR
+BR --> BS: List<Book>
+deactivate BR
+
+note right BS: Возвращаем все книги из БД\nбез дополнительных проверок
+
+BS --> BC: List<Book>
+deactivate BS
+
+BC --> UI: List<Book>
+deactivate BC
+@enduml

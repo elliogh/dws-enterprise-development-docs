@@ -1,0 +1,89 @@
+@startuml
+top to bottom direction
+
+class UI {
+
+}
+
+class Book {
+  - id: Long
+  - title: String
+  - author: String
+  - description: String
+  - price: BigDecimal
+  - isAvailable: Boolean
+}
+
+class Cart {
+  - id: UUID
+  - items: List<CartItem>
+}
+
+class CartItem {
+  - book: Book
+  - quantity: Integer
+}
+
+class BookController {
+  - bookService: BookService
+  + getAll(): List<Books>
+  + getById(id: Long): Book
+  + getByTitle(title: String): List<Book>
+}
+
+class CartController {
+  - CartService: CartService
+  + viewCart(cartId: UUID): Cart
+  + addBookToCart(CartItemDto: CartItemDto, cartId: UUID): Cart
+  + updateBookQuantityInCart(CartItemDto: CartItemDto, cartId: UUID): Cart
+  + removeBookFromCart(Long bookId, cartId: UUID): Cart
+}
+
+class BookService {
+  - bookRepository: BookRepository
+  + getAll(): List<Book>
+  + getById(id: Long): Book
+  + getByTitle(title: String): List<Book>
+}
+
+class CartService{
+  - cartRepository: CartRepository
+  + getCartById(id: UUID): Cart
+  + addBookToCart(CartItemDto: CartItemDto, cartId: UUID): Cart
+  + updateBookQuantity(CartItemDto: CartItemDto, cartId: UUID)
+  + deleteBookFromCart(bookId: Long, cartId: UUID): Cart
+}
+
+interface BookRepository implements JpaRepository<Book, Long> {
+  + findById(id: Long): Optional<Book>
+  + findByTitle(title: String): List<Book>
+  + findAll(): List<Book>
+}
+
+interface CartRepository implements JpaRepository<Cart, Long> {
+  + findById(id: UUID): Optional<Cart>
+}
+
+class CartItemDto {
+  - bookId: Long
+  - quantity: Integer
+}
+
+UI ..> BookController
+UI ..> CartController
+
+Cart "1" *-- "0..*" CartItem : contains
+CartItem "1" --> "1" Book : references
+
+BookController ..> BookService : depends on
+CartController ..> CartService : depends on
+
+BookService ..> BookRepository : depends on
+CartService ..> CartRepository : depends on
+
+BookRepository ..> Book
+CartRepository ..> Cart
+
+CartController ..> CartItemDto
+CartService ..> CartItemDto
+@enduml
