@@ -41,7 +41,7 @@ class Payment {
   - String status
 }
 
-Cart "1" *-- "1..*" CartItem : contains
+Cart "1" *-- "0..*" CartItem : contains
 CartItem "1" --> "1" Book : references
 Orderr "1" --> "1" Customer : references
 Orderr "1" --> "1" Cart : references
