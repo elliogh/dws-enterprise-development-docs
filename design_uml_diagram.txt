@@ -6,22 +6,43 @@ class UI {
 }
 
 class Book {
-  - id: Long
-  - title: String
-  - author: String
-  - description: String
-  - price: BigDecimal
-  - isAvailable: Boolean
+  - Long id
+  - String title
+  - String author
+  - String description
+  - BigDecimal price
+  - Integer stockQuantity
 }
 
 class Cart {
-  - id: UUID
-  - items: List<CartItem>
+  - UUID id
+  - List<CartItem> items
 }
 
 class CartItem {
-  - book: Book
-  - quantity: Integer
+  - Long id
+  - Integer quantity
+}
+
+class Customer {
+  - Long id
+  - String name
+  - String email
+  - String phone
+}
+
+class Orderr {
+  - Long id
+  - BigDecimal totalAmount
+  - String status
+  - ZonedDateTime createdAt
+}
+
+class Payment {
+  - Long id
+  - BigDecimal totalAmount
+  - ZonedDateTime paymentDate
+  - String status
 }
 
 class BookController {
@@ -32,11 +53,22 @@ class BookController {
 }
 
 class CartController {
-  - CartService: CartService
+  - cartService: CartService
   + viewCart(cartId: UUID): Cart
   + addBookToCart(CartItemDto: CartItemDto, cartId: UUID): Cart
   + updateBookQuantityInCart(CartItemDto: CartItemDto, cartId: UUID): Cart
   + removeBookFromCart(Long bookId, cartId: UUID): Cart
+}
+
+class OrderController {
+  - cartService: OrderService
+  + getOrder(id: Long): Order
+  + makeOrder(cartId: UUID, customer: Customer): Order
+}
+
+class PaymentController {
+  - paymentService: PaymentService
+  + pay(orderId: Long)
 }
 
 class BookService {
@@ -54,6 +86,18 @@ class CartService{
   + deleteBookFromCart(bookId: Long, cartId: UUID): Cart
 }
 
+class OrderService {
+  - orderRepository: OrderRepository
+  + getOrder(orderId: Long): Orderr
+  + makeOrder(cartId: UUID, customer: Customer): Orderr
+  + payOrder(orderId: Long)
+}
+
+class PaymentService {
+  - paymentRepository: paymentRepository
+  + pay(orderId: Long): Payment
+}
+
 interface BookRepository implements JpaRepository<Book, Long> {
   + findById(id: Long): Optional<Book>
   + findByTitle(title: String): List<Book>
@@ -64,6 +108,13 @@ interface CartRepository implements JpaRepository<Cart, Long> {
   + findById(id: UUID): Optional<Cart>
 }
 
+interface OrderRepository implements JpaRepository<Cart, Long> {
+  + findByCart_Id(id: UUID): Optional<Orderr>
+}
+
+interface PaymentRepository implements JpaRepository<Cart, Long> {
+}
+
 class CartItemDto {
   - bookId: Long
   - quantity: Integer
@@ -71,18 +122,30 @@ class CartItemDto {
 
 UI ..> BookController
 UI ..> CartController
+UI ..> OrderController
+UI ..> PaymentController
 
 Cart "1" *-- "0..*" CartItem : contains
 CartItem "1" --> "1" Book : references
+Orderr "1" --> "1" Customer : references
+Orderr "1" --> "1" Cart : references
+Orderr "1" -- "1" Payment : processes
+Payment "1" --> "1" Orderr : belongs
 
 BookController ..> BookService : depends on
 CartController ..> CartService : depends on
+OrderController ..> OrderService : depends on
+PaymentController ..> PaymentService : depends on
 
 BookService ..> BookRepository : depends on
 CartService ..> CartRepository : depends on
+OrderService ..> OrderRepository : depends on
+PaymentService ..> PaymentRepository : depends on
 
 BookRepository ..> Book
 CartRepository ..> Cart
+OrderRepository ..> Order
+PaymentRepository ..> Payment
 
 CartController ..> CartItemDto
 CartService ..> CartItemDto
