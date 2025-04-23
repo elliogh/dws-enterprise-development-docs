@@ -2,24 +2,50 @@
 top to bottom direction
 
 class Book {
-  - id: Long
-  - title: String
-  - author: String
-  - description: String
-  - price: BigDecimal
-  - isAvailable: Boolean
+  - Long id
+  - String title
+  - String author
+  - String description
+  - BigDecimal price
+  - Integer stockQuantity
 }
 
 class Cart {
-  - id: UUID
-  - items: List<CartItem>
+  - UUID id
+  - List<CartItem> items
 }
 
 class CartItem {
-  - book: Book
-  - quantity: Integer
+  - Long id
+  - Integer quantity
 }
 
-Cart "1" *-- "0..*" CartItem : contains
+class Customer {
+  - Long id
+  - String name
+  - String email
+  - String phone
+}
+
+class Orderr {
+  - Long id
+  - BigDecimal totalAmount
+  - String status
+  - ZonedDateTime createdAt
+}
+
+class Payment {
+  - Long id
+  - BigDecimal totalAmount
+  - ZonedDateTime paymentDate
+  - String status
+}
+
+Cart "1" *-- "1..*" CartItem : contains
 CartItem "1" --> "1" Book : references
+Orderr "1" --> "1" Customer : references
+Orderr "1" --> "1" Cart : references
+Orderr "1" -- "1" Payment : processes
+Payment "1" --> "1" Orderr : belongs
+
 @enduml
