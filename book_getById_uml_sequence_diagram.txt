@@ -3,6 +3,7 @@ actor "UI" as UI
 participant "BookController" as BC
 participant "BookService" as BS
 participant "BookRepository" as BR
+participant "Book" as Book <<Entity>>
 
 UI -> BC: getById(id)
 activate BC
@@ -20,10 +21,21 @@ alt "Книга не найдена"
     deactivate BS
     BC --> UI: Ошибка "Книга не найдена"
 else "Книга найдена"
+    BS -> Book: validate()
+    activate Book
+    Book --> BS: ok
+    deactivate Book
+    
+    BS -> Book: getDetails()
+    activate Book
+    Book --> BS: bookData
+    deactivate Book
+    
     BS --> BC: Book
     deactivate BS
     BC --> UI: Book
 end
 
 deactivate BC
+
 @enduml
