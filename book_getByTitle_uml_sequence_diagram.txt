@@ -3,6 +3,7 @@ actor "UI" as UI
 participant "BookController" as BC
 participant "BookService" as BS
 participant "BookRepository" as BR
+participant "Book" as Book <<Entity>>
 
 UI -> BC: getByTitle(title)
 activate BC
@@ -16,6 +17,11 @@ BR --> BS: List<Book>
 deactivate BR
 
 note right BS: Возвращаем результат даже\nесли список пустой
+
+BS -> Book: getDetails()
+activate Book
+Book --> BS: bookData
+deactivate Book
 
 BS --> BC: List<Book>
 deactivate BS
