@@ -3,6 +3,9 @@ actor "UI" as UI
 participant "CartController" as CC
 participant "CartService" as CS
 participant "CartRepository" as CR
+participant "Cart" as Cart <<Entity>>
+participant "CartItem" as CartItem <<Entity>>
+participant "Book" as Book <<Entity>>
 
 UI -> CC: viewCart(cartId)
 activate CC
@@ -20,6 +23,24 @@ alt "Корзина не найдена"
     deactivate CS
     CC --> UI: Ошибка "Корзина не найдена"
 else "Корзина существует"
+    CS -> Cart: validate()
+    activate Cart
+    Cart --> CS: validationResult
+    deactivate Cart
+    
+    CS -> Cart: getItemsWithBooks()
+    activate Cart
+    Cart -> CartItem: getAggregatedData()
+    activate CartItem
+    CartItem -> Book: getEssentialInfo()
+    activate Book
+    Book --> CartItem: basicBookData
+    deactivate Book
+    CartItem --> Cart: itemData
+    deactivate CartItem
+    Cart --> CS: completeCartData
+    deactivate Cart
+    
     CS --> CC: Cart
     deactivate CS
     CC --> UI: Cart
