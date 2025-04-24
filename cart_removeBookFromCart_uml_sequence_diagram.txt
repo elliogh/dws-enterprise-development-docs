@@ -3,6 +3,9 @@ actor "UI" as UI
 participant "CartController" as CC
 participant "CartService" as CS
 participant "CartRepository" as CR
+participant "Cart" as Cart <<Entity>>
+participant "CartItem" as CartItem <<Entity>>
+participant "Book" as Book <<Entity>>
 
 UI -> CC: removeBookFromCart(bookId, cartId)
 activate CC
@@ -20,12 +23,29 @@ alt "Корзина не найдена"
     deactivate CS
     CC --> UI: Ошибка "Корзина не найдена"
 else "Корзина существует"
+    CS -> Cart: findItem(bookId)
+    activate Cart
+    Cart --> CS: Optional<CartItem>
+    deactivate Cart
+
     alt "Товар не найден в корзине"
         CS --> CC: Ошибка 404
         deactivate CS
         CC --> UI: Ошибка "Товар не найден"
     else "Товар существует"
-        CS -> CS: Удалить CartItem
+        CS -> Cart: removeItem(CartItem)
+        activate Cart
+        Cart -> CartItem: markForRemoval()
+        activate CartItem
+        CartItem -> Book: releaseReservation()
+        activate Book
+        Book --> CartItem: OK
+        deactivate Book
+        CartItem --> Cart: removed
+        deactivate CartItem
+        Cart --> CS: updatedCart
+        deactivate Cart
+
         CS -> CR: save(cart)
         activate CR
         CR --> CS: Cart
