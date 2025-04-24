@@ -4,6 +4,9 @@ participant "CartController" as CC
 participant "CartService" as CS
 participant "BookService" as BS
 participant "CartRepository" as CR
+participant "Cart" as Cart <<Entity>>
+participant "CartItem" as CartItem <<Entity>>
+participant "Book" as Book <<Entity>>
 
 UI -> CC: addBookToCart(dto, cartId)
 activate CC
@@ -23,6 +26,10 @@ alt "Корзина не найдена"
 else "Корзина существует"
     CS -> BS: getById(dto.bookId)
     activate BS
+    BS -> Book: fetchDetails()
+    activate Book
+    Book --> BS: bookData
+    deactivate Book
     BS --> CS: Book
     deactivate BS
 
@@ -31,9 +38,19 @@ else "Корзина существует"
         deactivate CS
         CC --> UI: Ошибка "Книга недоступна"
     else "Книга доступна"
-        CS -> CS: Создать CartItem
-        note right CS: Проверка на дублирование товара\nв корзине
-        CS -> CS: Добавить в корзину
+        CS -> Cart: addBook(Book, dto.quantity)
+        activate Cart
+        Cart -> CartItem: create(Book, quantity)
+        activate CartItem
+        CartItem -> Book: reserve()
+        activate Book
+        Book --> CartItem: reservationConfirmed
+        deactivate Book
+        CartItem --> Cart: createdItem
+        deactivate CartItem
+        Cart --> CS: updatedCart
+        deactivate Cart
+
         CS -> CR: save(cart)
         activate CR
         CR --> CS: Cart
