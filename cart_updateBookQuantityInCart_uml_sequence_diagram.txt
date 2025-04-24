@@ -3,6 +3,8 @@ actor "UI" as UI
 participant "CartController" as CC
 participant "CartService" as CS
 participant "CartRepository" as CR
+participant "Cart" as Cart <<Entity>>
+participant "CartItem" as CartItem <<Entity>>
 
 UI -> CC: updateBookQuantityInCart(dto, cartId)
 activate CC
@@ -20,26 +22,33 @@ alt "Корзина не найдена"
     deactivate CS
     CC --> UI: Ошибка "Корзина не найдена"
 else "Корзина существует"
-    alt "Товар не найден в корзине"
-        CS --> CC: Ошибка 404
+    CS -> Cart: updateItemQuantity(dto.bookId, dto.quantity)
+    activate Cart
+    Cart -> CartItem: validateAndSetQuantity()
+    activate CartItem
+    
+    alt "Некорректное количество"
+        CartItem --> Cart: Error
+        deactivate CartItem
+        Cart --> CS: ValidationError
+        deactivate Cart
+        CS --> CC: Ошибка 400
         deactivate CS
-        CC --> UI: Ошибка "Товар не найден"
-    else "Товар существует"
-        alt "Некорректное количество (<= 0)"
-            CS --> CC: Ошибка 400
-            deactivate CS
-            CC --> UI: Ошибка "Недопустимое количество"
-        else "Количество корректно"
-            CS -> CS: Обновить количество
-            CS -> CR: save(cart)
-            activate CR
-            CR --> CS: Cart
-            deactivate CR
+        CC --> UI: Ошибка "Недопустимое количество"
+    else "Корректное количество"
+        CartItem --> Cart: Success
+        deactivate CartItem
+        Cart --> CS: updatedCart
+        deactivate Cart
 
-            CS --> CC: Cart
-            deactivate CS
-            CC --> UI: Cart
-        end
+        CS -> CR: save(cart)
+        activate CR
+        CR --> CS: Cart
+        deactivate CR
+
+        CS --> CC: Cart
+        deactivate CS
+        CC --> UI: Cart
     end
 end
 
