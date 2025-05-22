@@ -39,7 +39,7 @@ else "Заказ существует"
 
     OS --> OC: Order
     deactivate OS
-    OC --> UI: PaymentResponse(status: "PAID")
+    OC --> UI: PaymentResponse
 end
 
 deactivate OC
