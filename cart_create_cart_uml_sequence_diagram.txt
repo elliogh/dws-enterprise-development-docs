@@ -1,0 +1,35 @@
+@startuml CreateCartSequence
+
+actor "UI" as UI
+participant "CartController" as CC
+participant "CartService" as CS
+participant "CartRepository" as CR
+participant "Cart" as Cart <<Entity>>
+
+UI -> CC: createCart()
+activate CC
+
+CC -> CS: createNewCart()
+activate CS
+
+CS -> Cart: new Cart()
+activate Cart
+Cart --> CS: Cart
+deactivate Cart
+
+CS -> CR: save(cart)
+activate CR
+CR --> CS: Cart
+deactivate CR
+
+CS --> CC: Cart
+deactivate CS
+
+CC -> Cart: getId()
+activate Cart
+Cart --> CC: cartId
+deactivate Cart
+
+CC --> UI: cartId
+deactivate CC
+@enduml
