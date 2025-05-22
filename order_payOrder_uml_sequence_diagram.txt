@@ -1,5 +1,4 @@
 @startuml OrderPaymentSequence
-title Процесс оплаты заказа (OrderController.payOrder)
 
 actor "UI" as UI
 participant "OrderController" as OC
