@@ -1,0 +1,47 @@
+@startuml OrderPaymentSequence
+title Процесс оплаты заказа (OrderController.payOrder)
+
+actor "UI" as UI
+participant "OrderController" as OC
+participant "OrderService" as OS
+participant "OrderRepository" as OR
+participant "Order" as Order <<Entity>>
+participant "Payment" as Payment <<Entity>>
+
+UI -> OC: payOrder(orderId)
+activate OC
+
+OC -> OS: payOrder(orderId)
+activate OS
+
+OS -> OR: findById(orderId)
+activate OR
+OR --> OS: Optional<Order>
+deactivate OR
+
+alt "Заказ не найден"
+    OS --> OC: OrderException("Заказ не найден")
+    deactivate OS
+    OC --> UI: Error 404
+else "Заказ существует"
+    OS -> Order: processPayment()
+    activate Order
+    Order -> Payment: new Payment()
+    activate Payment
+    Payment --> Order: Payment
+    deactivate Payment
+    Order --> OS: updatedOrder
+    deactivate Order
+
+    OS -> OR: save(order)
+    activate OR
+    OR --> OS: Order
+    deactivate OR
+
+    OS --> OC: Order
+    deactivate OS
+    OC --> UI: PaymentResponse(status: "PAID")
+end
+
+deactivate OC
+@enduml
