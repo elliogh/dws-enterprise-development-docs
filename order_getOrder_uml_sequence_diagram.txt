@@ -1,0 +1,37 @@
+@startuml GetOrderSequence
+
+actor "UI" as UI
+participant "OrderController" as OC
+participant "OrderService" as OS
+participant "OrderRepository" as OR
+participant "Order" as Order <<Entity>>
+
+UI -> OC: getOrder(id)
+activate OC
+
+OC -> OS: getOrderById(id)
+activate OS
+
+OS -> OR: findById(id)
+activate OR
+OR --> OS: Optional<Order>
+deactivate OR
+
+alt "Заказ не найден"
+    OS --> OC: OrderNotFoundException()
+    deactivate OS
+    OC --> UI: 404 Not Found
+else "Заказ существует"
+    OS -> Order: prepareResponse()
+    activate Order
+    Order --> OS: OrderResponse()
+    deactivate Order
+    
+    OS --> OC: OrderResponse
+    deactivate OS
+    
+    OC --> UI: OrderResponse
+end
+
+deactivate OC
+@enduml
