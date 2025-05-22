@@ -1,5 +1,4 @@
 @startuml OrderCreationSequence
-title Процесс создания заказа (OrderController.makeOrder)
 
 actor "UI" as UI
 participant "OrderController" as OC
