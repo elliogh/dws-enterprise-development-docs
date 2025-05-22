@@ -36,7 +36,7 @@ else "Корзина существует"
 
     OS --> OC: Order
     deactivate OS
-    OC --> UI: OrderResponse(orderId, cart, status)
+    OC --> UI: OrderResponse
 end
 
 deactivate OC
