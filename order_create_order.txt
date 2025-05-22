@@ -1,0 +1,44 @@
+@startuml OrderCreationSequence
+title Процесс создания заказа (OrderController.makeOrder)
+
+actor "UI" as UI
+participant "OrderController" as OC
+participant "OrderService" as OS
+participant "CartRepository" as CR
+participant "OrderRepository" as OR
+participant "Order" as Order <<Entity>>
+participant "Cart" as Cart <<Entity>>
+
+UI -> OC: makeOrder(cartId, customer)
+activate OC
+
+OC -> OS: makeOrder(cartId, customer)
+activate OS
+
+OS -> CR: findById(cartId)
+activate CR
+CR --> OS: Optional<Cart>
+deactivate CR
+
+alt "Корзина не найдена"
+    OS --> OC: OrderException("Корзина не найдена")
+    deactivate OS
+    OC --> UI: Error 404
+else "Корзина существует"
+    OS -> Order: new Order(cart, customer)
+    activate Order
+    Order --> OS: Order
+    deactivate Order
+
+    OS -> OR: save(order)
+    activate OR
+    OR --> OS: Order
+    deactivate OR
+
+    OS --> OC: Order
+    deactivate OS
+    OC --> UI: OrderResponse(orderId, cart, status)
+end
+
+deactivate OC
+@enduml
